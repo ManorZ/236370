@@ -15,9 +15,10 @@ def max_cpu(A, B):
     C = np.empty_like(A)
     for x in range(A.shape[0]):
         for y in range(A.shape[1]):
-            a = A[x, y]
-            b = B[x, y]
-            C[x, y] = max(a, b)
+            # a = A[x, y]
+            # b = B[x, y]
+            # C[x, y] = max(a, b)
+            C[x, y] = max(A[x, y], B[x, y])
     return C
     pass
 
@@ -35,6 +36,9 @@ def max_numba(A, B):
     C = np.empty_like(A)
     for x in range(A.shape[0]):
         for y in range(A.shape[1]):
+            # a = A[x, y]
+            # b = B[x, y]
+            # C[x, y] = max(a, b)
             C[x, y] = max(A[x, y], B[x, y])
     return C
     pass
@@ -44,7 +48,10 @@ def max_numba(A, B):
 def max_gpu_single_thread(A, B, C):
     x, y = cuda.grid(2)
     if x < A.shape[0] and y < A.shape[1]:
-        C[x, y] = max(A[x, y], B[x,y])
+        # a = A[x, y]
+        # b = B[x, y]
+        # C[x, y] = max(a, b)
+        C[x, y] = max(A[x, y], B[x, y])
 
 def max_gpu(A, B):
     """
@@ -90,11 +97,13 @@ def max_comparison():
 
 
 if __name__ == '__main__':
-    os.system('lscpu')
-    os.system('nvidia-smi')
-    os.system('nvidia-smi --query-gpu=name --format=csv')
+    # os.system('lscpu')
+    # os.system('nvidia-smi')
+    # os.system('nvidia-smi --query-gpu=name --format=csv')
     max_comparison()
 
+    # Check for correctness:
+    # ----------------------
     # N = 1000
     # A = np.random.randint(0, 256, (N, N))
     # B = np.random.randint(0, 256, (N, N))
