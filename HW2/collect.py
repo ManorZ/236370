@@ -1,7 +1,7 @@
 import gzip
 import pickle
 import os
-import wget
+#import wget
 
 import numpy as np
 
