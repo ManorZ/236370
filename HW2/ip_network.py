@@ -1,3 +1,4 @@
+import os
 import sys
 import math
 import time
@@ -32,7 +33,9 @@ class IPNeuralNetwork(NeuralNetwork):
         self.result = Queue()
         # self.result = MyQueue()
 
-        self.num_workers = multiprocessing.cpu_count() * 2
+        # self.num_workers = multiprocessing.cpu_count() * 2
+        # self.num_workers = multiprocessing.cpu_count()
+        self.num_workers = int(os.environ['SLURM_CPUS_PER_TASK'])
         workers = [ Worker(self.jobs, self.result, training_data, self.mini_batch_size) for i in range(self.num_workers) ]
 
         for w in workers:
