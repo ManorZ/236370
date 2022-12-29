@@ -231,6 +231,10 @@ def show_image(image, fname):
     plt.show()
 
 
+def correlation_cpu(kernel, image):
+    return convolve2d(image, np.flipud(np.fliplr(kernel)), mode='same')
+
+
 def timer(kernel, f):
     return min(timeit.Timer(lambda: f(kernel, image)).repeat(20, 1))
 
@@ -248,7 +252,6 @@ if __name__ == '__main__':
             [-3/18, -2/13, -1/10, 0, 1/10, 2/13, 3/18]
         ]
     )
-
     flipped_edge_kernel = np.array(
         [
             [3/18, 2/13, 1/10, 0, -1/10, -2/13, -3/18],
@@ -260,7 +263,6 @@ if __name__ == '__main__':
             [3/18, 2/13, 1/10, 0, -1/10, -2/13, -3/18]
         ]
     )
-
     # 5X5
     blur_kernel = np.array(
         [
@@ -271,7 +273,6 @@ if __name__ == '__main__':
             [1/25, 1/25, 1/25, 1/25, 1/25]
         ]
     )
-
     # 3X3
     shapen_kernel = np.array(
         [
@@ -280,7 +281,6 @@ if __name__ == '__main__':
             [0, -1, 0]
         ]
     )
-
     # 3X5
     non_symmetric_kernel = np.array(
         [
@@ -289,71 +289,80 @@ if __name__ == '__main__':
             [0, -1, -2, 1, 0],
         ]
     )
-
+    
     image = load_image()
 
     # image_scipy = convolve2d(image, np.flipud(np.fliplr(non_symmetric_kernel)), mode='same')
     # image_numba = correlation_numba(non_symmetric_kernel, image)
-    # print('non_symmetric_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
-    # # print('numba\n', image_numba)
-    # # print('scipy\n', image_scipy)
-    # # print('numba-scipy\n', image_numba-image_scipy)
     # image_cuda = correlation_gpu(non_symmetric_kernel, image)
+    # print('non_symmetric_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
     # print('non_symmetric_kernel cuda vs. scipy:', np.linalg.norm(image_cuda-image_scipy))
-    # # print('cuda\n', image_cuda)
-    # # print('scipy\n', image_scipy)
-    # # print('cuda-scipy\n', image_cuda-image_scipy)
-    
-    # print('non_symmetric_kernel cuda time:', timer(non_symmetric_kernel, correlation_gpu))
+
+    # scipy_time = timer(non_symmetric_kernel, correlation_cpu)
+    # print('non_symmetric_kernel scipy time:', scipy_time)
+    # numba_time = timer(non_symmetric_kernel, correlation_numba)
+    # print('non_symmetric_kernel numba time:', numba_time)
+    # gpu_time = timer(non_symmetric_kernel, correlation_gpu)
+    # print('non_symmetric_kernel cuda time:', gpu_time)
+
+    # gpu_scipy_speedup = scipy_time / gpu_time
+    # numba_scipy_speedup = scipy_time / numba_time
+    # print('non_symmetric_kernel numba-scipy speedup:', numba_scipy_speedup)
+    # print('non_symmetric_kernel cuda-scipy speedup:', gpu_scipy_speedup)
+
 
     # image_scipy = convolve2d(image, np.flipud(np.fliplr(shapen_kernel)), mode='same')
     # image_numba = correlation_numba(shapen_kernel, image)
-    # print('shapen_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
-    # # print('numba\n', image_numba)
-    # # print('scipy\n', image_scipy)
-    # # print('numba-scipy\n', image_numba-image_scipy)
     # image_cuda = correlation_gpu(shapen_kernel, image)
+    # print('shapen_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
     # print('shapen_kernel cuda vs. scipy:', np.linalg.norm(image_cuda-image_scipy))
-    # # # print('cuda\n', image_cuda)
-    # # # print('scipy\n', image_scipy)
-    # # cuda_scipy_diff = image_cuda-image_scipy
-    # # cuda_scipy_diff[abs(cuda_scipy_diff) < 1e-6] = 0
-    # # print('cuda-scipy diff\n', cuda_scipy_diff)
 
+    # scipy_time = timer(shapen_kernel, correlation_cpu)
+    # print('shapen_kernel scipy time:', scipy_time)
+    # numba_time = timer(shapen_kernel, correlation_numba)
+    # print('shapen_kernel numba time:', numba_time)
+    # gpu_time = timer(shapen_kernel, correlation_gpu)
+    # print('shapen_kernel cuda time:', gpu_time)
 
-    # print('shapen_kernel cuda time:', timer(shapen_kernel, correlation_gpu))
+    # gpu_scipy_speedup = scipy_time / gpu_time
+    # numba_scipy_speedup = scipy_time / numba_time
+    # print('shapen_kernel numba-scipy speedup:', numba_scipy_speedup)
+    # print('shapen_kernel cuda-scipy speedup:', gpu_scipy_speedup)
 
+    
     # image_scipy = convolve2d(image, np.flipud(np.fliplr(blur_kernel)), mode='same')
     # image_numba = correlation_numba(blur_kernel, image)
-    # print('blur_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
-    # # print('numba\n', image_numba)
-    # # print('scipy\n', image_scipy)
-    # # print('numba-scipy\n', image_numba-image_scipy)
     # image_cuda = correlation_gpu(blur_kernel, image)
+    # print('blur_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
     # print('blur_kernel cuda vs. scipy:', np.linalg.norm(image_cuda-image_scipy))
-    # # print('cuda\n', image_cuda)
-    # # print('scipy\n', image_scipy)
-    # # cuda_scipy_diff = image_cuda-image_scipy
-    # # cuda_scipy_diff[abs(cuda_scipy_diff) < 1e-6] = 0
-    # # print('cuda-scipy diff\n', cuda_scipy_diff)
-    # # print(np.nonzero(cuda_scipy_diff))
 
-    # print('blur_kernel cuda time:', timer(blur_kernel, correlation_gpu))
+    # scipy_time = timer(blur_kernel, correlation_cpu)
+    # print('blur_kernel scipy time:', scipy_time)
+    # numba_time = timer(blur_kernel, correlation_numba)
+    # print('blur_kernel numba time:', numba_time)
+    # gpu_time = timer(blur_kernel, correlation_gpu)
+    # print('blur_kernel cuda time:', gpu_time)
 
-    image_scipy = convolve2d(image, np.flipud(np.fliplr(edge_kernel)), mode='same')
-    image_numba = correlation_numba(edge_kernel, image)
-    print('edge_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
-    # print('numba\n', image_numba)
-    # print('scipy\n', image_scipy)
-    # print('numba-scipy\n', image_numba-image_scipy)
-    image_cuda = correlation_gpu(edge_kernel, image)
-    print('edge_kernel cuda vs. scipy:', np.linalg.norm(image_cuda-image_scipy))
-    # print('cuda\n', image_cuda)
-    # print('scipy\n', image_scipy)
-    # diff = image_cuda-image_scipy
-    # diff[abs(diff) < 1e-6] = 0
-    # print('cuda-scipy\n', (diff))
-    # print(np.nonzero(diff))
-    # print(image_cuda.shape)
+    # gpu_scipy_speedup = scipy_time / gpu_time
+    # numba_scipy_speedup = scipy_time / numba_time
+    # print('blur_kernel numba-scipy speedup:', numba_scipy_speedup)
+    # print('blur_kernel cuda-scipy speedup:', gpu_scipy_speedup)
 
-    # print('edge_kernel cuda time:', timer(edge_kernel, correlation_gpu))
+
+    # image_scipy = convolve2d(image, np.flipud(np.fliplr(edge_kernel)), mode='same')
+    # image_numba = correlation_numba(edge_kernel, image)
+    # image_cuda = correlation_gpu(edge_kernel, image)
+    # print('edge_kernel numba vs. scipy:', np.linalg.norm(image_numba-image_scipy))
+    # print('edge_kernel cuda vs. scipy:', np.linalg.norm(image_cuda-image_scipy))
+
+    scipy_time = timer(edge_kernel, correlation_cpu)
+    print('edge_kernel scipy time:', scipy_time)
+    numba_time = timer(edge_kernel, correlation_numba)
+    print('edge_kernel numba time:', numba_time)
+    gpu_time = timer(edge_kernel, correlation_gpu)
+    print('edge_kernel cuda time:', gpu_time)
+
+    gpu_scipy_speedup = scipy_time / gpu_time
+    numba_scipy_speedup = scipy_time / numba_time
+    print('edge_kernel numba-scipy speedup:', numba_scipy_speedup)
+    print('edge_kernel cuda-scipy speedup:', gpu_scipy_speedup)
