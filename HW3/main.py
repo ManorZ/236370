@@ -4,8 +4,13 @@ import sys
 from collect import *
 from network import *
 from time import time
+
 from sync_network import *
+# from sync_network_collective import *
+
 from async_network import *
+# from async_network_4ranks_2masters import *
+# from async_network_4ranks_1masters import *
 
 
 def print_use():
@@ -37,10 +42,10 @@ training_data, validation_data, test_data = load_mnist()
 
 start1 = time()
 # initialize neuralnet
-nn = NeuralNetwork(layers, learning_rate, mini_batch_size, batch_size, epochs)
+# nn = NeuralNetwork(layers, learning_rate, mini_batch_size, batch_size, epochs)
 
 # training neural network
-nn.fit(training_data, validation_data)
+# nn.fit(training_data, validation_data)
 
 stop1 = time()
 
@@ -48,11 +53,15 @@ print('Time reg:', stop1 - start1)
 
 # testing neural network
 
-accuracy = nn.validate(test_data) / 100.0
-print("Test Accuracy: " + str(accuracy) + "%")
+# accuracy = nn.validate(test_data) / 100.0
+# print("Test Accuracy: " + str(accuracy) + "%")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if sys.argv[1] == "sync":
+
+    # there's no point to use distributed training with the same batch size... The whole idea was to increase the effective batch size
+    # mini_batch_size = 64
+
     start1 = time()
     # initialize neuralnet
     nn = SynchronicNeuralNetwork(layers, learning_rate, mini_batch_size, batch_size, epochs)
@@ -76,6 +85,9 @@ if sys.argv[1] == "async":
         sys.exit()
 
     masters = int(sys.argv[2])
+
+    # epochs = 1
+    # batch_size = 8
 
     start1 = time()
     # initialize neuralnet
