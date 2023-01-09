@@ -25,7 +25,9 @@ class AsynchronicNeuralNetwork(NeuralNetwork):
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
-		self.num_workers = self.size - self.num_masters
+        self.num_workers = self.size - self.num_masters
+
+        print(f'size={self.size}, #workers={self.num_workers} #masters={self.num_masters}')
 
         self.layers_per_master = self.num_layers // self.num_masters
 
@@ -46,6 +48,7 @@ class AsynchronicNeuralNetwork(NeuralNetwork):
         """
         # setting up the number of batches the worker should do every epoch
         # TODO: add your code
+        self.number_of_batches = self.number_of_batches // self.num_workers
 
         for epoch in range(self.epochs):
             # creating batches for epoch
@@ -59,9 +62,35 @@ class AsynchronicNeuralNetwork(NeuralNetwork):
 
                 # send nabla_b, nabla_w to masters 
                 # TODO: add your code
+                master_idx = 0
+                for layer_idx in range(self.num_layers):
+                    self.comm.Isend(nabla_w[layer_idx], master_idx)
+                    master_idx = (master_idx+1)%self.num_masters
+                
+                master_idx = 0
+                for layer_idx in range(self.num_layers):
+                    self.comm.Isend(nabla_b[layer_idx], master_idx)
+                    master_idx = (master_idx+1)%self.num_masters
 
                 # recieve new self.weight and self.biases values from masters
                 # TODO: add your code
+                master_idx = 0
+                recv_w_reqs = []
+                for layer_idx in range(self.num_layers):
+                    recv_w_reqs.append(self.comm.Irecv(self.weights[layer_idx], master_idx))
+                    master_idx = (master_idx+1)%self.num_masters
+                for recv_w_req in recv_w_reqs:
+                    recv_w_req.Wait()
+                
+                master_idx = 0
+                recv_b_reqs = []
+                for layer_idx in range(self.num_layers):
+                    recv_b_reqs.append(self.comm.Irecv(self.biases[layer_idx], master_idx))
+                    master_idx = (master_idx+1)%self.num_masters
+                for recv_b_req in recv_b_reqs:
+                    recv_b_req.Wait()
+                
+                
 
     def do_master(self, validation_data):
         """
@@ -74,23 +103,55 @@ class AsynchronicNeuralNetwork(NeuralNetwork):
         for i in range(self.rank, self.num_layers, self.num_masters):
             nabla_w.append(np.zeros_like(self.weights[i]))
             nabla_b.append(np.zeros_like(self.biases[i]))
+        
+        self.number_of_batches = (self.number_of_batches // self.num_workers) * self.num_workers
 
         for epoch in range(self.epochs):
             for batch in range(self.number_of_batches):
 
+                # master iterates through the effective number of batches - each worker gets a subset of it.
+                # since the first M ranks are masters, the next W ranks are workers
+                worker_idx = batch % self.num_workers + self.num_masters
+
                 # wait for any worker to finish batch and
                 # get the nabla_w, nabla_b for the master's layers
                 # TODO: add your code
+                for i in range(len(nabla_w)):
+                    recv_nab_w_req = self.comm.Irecv(nabla_w[i], worker_idx)
+                    recv_nab_w_req.Wait()
+                for i in range(len(nabla_b)):
+                    recv_nab_b_req = self.comm.Irecv(nabla_b[i], worker_idx)
+                    recv_nab_b_req.Wait()
 
                 # calculate new weights and biases (of layers in charge)
                 for i, dw, db in zip(range(self.rank, self.num_layers, self.num_masters), nabla_w, nabla_b):
                     self.weights[i] = self.weights[i] - self.eta * dw
                     self.biases[i] = self.biases[i] - self.eta * db
-
+                
                 # send new values (of layers in charge)
                 # TODO: add your code
-
+                for i, dw in zip(range(self.rank, self.num_layers, self.num_masters), nabla_w):
+                    self.comm.Isend(self.weights[i], worker_idx)
+                for i, db in zip(range(self.rank, self.num_layers, self.num_masters), nabla_b):
+                    self.comm.Isend(self.biases[i], worker_idx)
+                
             self.print_progress(validation_data, epoch)
 
-        # gather relevant weight and biases to process 0
-        # TODO: add your code
+            # gather relevant weight and biases to process 0
+            # TODO: add your code
+            # NOTE: this was outside the for epoch loop but I think it should be here! This is how it works for real systems. Every epoch, the main parameters server is synced with all others.
+            if self.rank != 0:
+                # send all layers under this master responsibility
+                for i in range(self.rank, self.num_layers, self.num_masters):
+                    self.comm.Isend(self.weights[i], 0)
+                for i in range(self.rank, self.num_layers, self.num_masters):
+                    self.comm.Isend(self.biases[i], 0)
+            if self.rank == 0:
+                # iterate through all other masters - receive from each one his layers
+                for master_idx in range(1, self.num_masters):
+                    for i in range(master_idx, self.num_layers, self.num_masters):
+                        recv_w_req = self.comm.Irecv(self.weights[i], master_idx)
+                        recv_w_req.Wait()
+                    for i in range(master_idx, self.num_layers, self.num_masters):
+                        recv_b_req = self.comm.Irecv(self.biases[i], master_idx)
+                        recv_b_req.Wait()
