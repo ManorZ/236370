@@ -42,10 +42,10 @@ training_data, validation_data, test_data = load_mnist()
 
 start1 = time()
 # initialize neuralnet
-# nn = NeuralNetwork(layers, learning_rate, mini_batch_size, batch_size, epochs)
+nn = NeuralNetwork(layers, learning_rate, mini_batch_size, batch_size, epochs)
 
 # training neural network
-# nn.fit(training_data, validation_data)
+nn.fit(training_data, validation_data)
 
 stop1 = time()
 
@@ -53,8 +53,8 @@ print('Time reg:', stop1 - start1)
 
 # testing neural network
 
-# accuracy = nn.validate(test_data) / 100.0
-# print("Test Accuracy: " + str(accuracy) + "%")
+accuracy = nn.validate(test_data) / 100.0
+print("Test Accuracy: " + str(accuracy) + "%")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if sys.argv[1] == "sync":

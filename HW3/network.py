@@ -80,7 +80,7 @@ class NeuralNetwork(object):
         """
         if validation_data:
             accuracy = self.validate(validation_data) / 100.0
-            print("Epoch {0}, accuracy {1} %.".format(epoch + 1, accuracy))
+            print("Epoch {0}, accuracy {1:.6f} %.".format(epoch + 1, accuracy))
         else:
             print("Processed epoch {0}.".format(epoch))
 

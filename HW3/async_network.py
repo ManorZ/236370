@@ -82,29 +82,29 @@ class AsynchronicNeuralNetwork(NeuralNetwork):
                 # TODO: add your code
 
                 master_idx = 0
-                recv_w_reqs = []
+                # recv_w_reqs = []
                 for layer_idx in range(self.num_layers):
-                    recv_w_reqs.append(self.comm.Irecv(self.weights[layer_idx], master_idx))
-                    # recv_w_req = self.comm.Irecv(self.weights[layer_idx], master_idx)
-                    # recv_w_req.Wait()
+                    # recv_w_reqs.append(self.comm.Irecv(self.weights[layer_idx], master_idx))
+                    recv_w_req = self.comm.Irecv(self.weights[layer_idx], master_idx)
+                    recv_w_req.Wait()
                     master_idx = (master_idx+1)%self.num_masters
                 
                 # for recv_w_req in recv_w_reqs:
                 #     recv_w_req.Wait()
                 
                 master_idx = 0
-                recv_b_reqs = []
+                # recv_b_reqs = []
                 for layer_idx in range(self.num_layers):
-                    recv_b_reqs.append(self.comm.Irecv(self.biases[layer_idx], master_idx))
-                    # recv_b_req = self.comm.Irecv(self.biases[layer_idx], master_idx)
-                    # recv_b_req.Wait()
+                    # recv_b_reqs.append(self.comm.Irecv(self.biases[layer_idx], master_idx))
+                    recv_b_req = self.comm.Irecv(self.biases[layer_idx], master_idx)
+                    recv_b_req.Wait()
                     master_idx = (master_idx+1)%self.num_masters
                 
-                for recv_w_req in recv_w_reqs:
-                    recv_w_req.Wait()
+                # for recv_w_req in recv_w_reqs:
+                #     recv_w_req.Wait()
 
-                for recv_b_req in recv_b_reqs:
-                    recv_b_req.Wait()
+                # for recv_b_req in recv_b_reqs:
+                #     recv_b_req.Wait()
                 
                 # NOTE: debug print
                 # master_idx = 0
@@ -142,26 +142,26 @@ class AsynchronicNeuralNetwork(NeuralNetwork):
                 # get the nabla_w, nabla_b for the master's layers
                 # TODO: add your code
 
-                recv_w_reqs = []
+                # recv_w_reqs = []
                 for i in range(len(nabla_w)):
-                    recv_w_reqs.append(self.comm.Irecv(nabla_w[i], worker_idx))
-                    # recv_w_req = self.comm.Irecv(nabla_w[i], worker_idx)
-                    # recv_w_req.Wait()
+                    # recv_w_reqs.append(self.comm.Irecv(nabla_w[i], worker_idx))
+                    recv_w_req = self.comm.Irecv(nabla_w[i], worker_idx)
+                    recv_w_req.Wait()
                     
                 # for recv_w_req in recv_w_reqs:
                 #     recv_w_req.Wait()
                 
-                recv_b_reqs = []
+                # recv_b_reqs = []
                 for i in range(len(nabla_b)):
-                    recv_b_reqs.append(self.comm.Irecv(nabla_b[i], worker_idx))
-                    # recv_b_req = self.comm.Irecv(nabla_b[i], worker_idx)
-                    # recv_b_req.Wait()
-                
-                for recv_w_req in recv_w_reqs:
-                    recv_w_req.Wait()
-
-                for recv_b_req in recv_b_reqs:
+                    # recv_b_reqs.append(self.comm.Irecv(nabla_b[i], worker_idx))
+                    recv_b_req = self.comm.Irecv(nabla_b[i], worker_idx)
                     recv_b_req.Wait()
+                
+                # for recv_w_req in recv_w_reqs:
+                #     recv_w_req.Wait()
+
+                # for recv_b_req in recv_b_reqs:
+                #     recv_b_req.Wait()
                 
                 # NOTE: debug print
                 # for i in range(len(nabla_w)):

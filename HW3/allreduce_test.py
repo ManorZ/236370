@@ -26,14 +26,14 @@ for size in [2**12, 2**13, 2**14, 2**15, 2**16]:
     allreduce(data, res1, la_comm, _op)
     end1 = time()
     naive_time = end1-start1
-    print("naive impl time:", naive_time)
+    print(f"naive impl time:   {naive_time:.6f}")
     start1 = time()
     ringallreduce(data, res2, la_comm, _op)
     end1 = time()
     ring_time=end1-start1
-    print("ring impl time:", ring_time)
+    print(f"ring impl time:    {ring_time:.6f}")
     ring_speedup = naive_time / ring_time
-    print("ring impl speedup:", ring_speedup)
+    print(f"ring impl speedup: {ring_speedup:.2f}")
     print('-'*50)
     assert np.allclose(res1, res2)
 
